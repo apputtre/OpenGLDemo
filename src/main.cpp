@@ -113,17 +113,6 @@ int main(int argc, char* argv[])
 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	ShaderProgram object_shader(
-		"shaders\\phong\\vertex.vert",
-		"shaders\\phong\\object.frag"
-	);
-
-	if (object_shader.getError() != "")
-	{
-		std::cout << object_shader.getError();
-		return 1;
-	}
-
 	ShaderProgram lightsource_shader(
 		"shaders\\phong\\vertex.vert",
 		"shaders\\phong\\lightsource.frag"
@@ -132,17 +121,6 @@ int main(int argc, char* argv[])
 	if (lightsource_shader.getError() != "")
 	{
 		std::cout << lightsource_shader.getError();
-		return 1;
-	}
-
-	ShaderProgram debug_shader(
-		"shaders\\debug\\vertex.vert",
-		"shaders\\debug\\fragment.frag"
-	);
-
-	if (debug_shader.getError() != "")
-	{
-		std::cout << debug_shader.getError();
 		return 1;
 	}
 
@@ -164,154 +142,14 @@ int main(int argc, char* argv[])
 	vec3 lightScale = vec3{ 10, 10, 10 };
 
 	lightsource_cube.model = mat4(1);
-	tl3d::trans(tl3d::rotate(tl3d::scale(lightsource_cube.model, lightScale), (float) PI / 6.0f, vec3 {1, 1, 1}), lightPos);
+	//tl3d::trans(tl3d::rotate(tl3d::scale(lightsource_cube.model, lightScale), (float) PI / 6.0f, vec3 {1, 1, 1}), lightPos);
 
-	Camera cam(vec3{ -82.91, -4.81, 43.72 }, vec3{ 1, 0, 0 }, vec3{-0.03, 0.91, -0.42});
-
-	// create the material maps
-	unsigned int texDiffuse, texSpecular;
-	{
-		glGenTextures(1, &texDiffuse);
-		glGenTextures(1, &texSpecular);
-
-		stbi_set_flip_vertically_on_load(true);
-
-		int width, height, nrChannels;
-		unsigned char* data = stbi_load("assets\\container_diffuse.png", &width, &height, &nrChannels, 0);
-
-		if (data == nullptr)
-			throw std::runtime_error("Failed to load texture from disk");
-
-		/*
-		1: Texture target
-			GL_TEXTURE_2D indicates that the operation will generate a texture on the currently bound texture object
-		2: mipmap level
-			0 indicates the base mipmap level
-		3: Texture format
-			RGB indicates that the texture has only red, green, and blue values
-		4, 5: width and height of texture
-		6: Always 0 (legacy)
-		7: image data
-		*/
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texDiffuse);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		// generate mipmaps for the currently bound texture
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		stbi_image_free(data);
-
-		data = stbi_load("assets\\container_specular.png", &width, &height, &nrChannels, 0);
-
-		if (data == nullptr)
-			throw std::runtime_error("Failed to load texture from disk");
-
-		/*
-		1: Texture target
-			GL_TEXTURE_2D indicates that the operation will generate a texture on the currently bound texture object
-		2: mipmap level
-			0 indicates the base mipmap level
-		3: Texture format
-			RGB indicates that the texture has only red, green, and blue values
-		4, 5: width and height of texture
-		6: Always 0 (legacy)
-		7: image data
-		*/
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texSpecular);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		// generate mipmaps for the currently bound texture
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		stbi_image_free(data);
-	}
-
-	object_shader.use();
-	object_shader.setUniform("view", cam.getTransform());
-	object_shader.setUniform("projection", perspective_projection);
-	object_shader.setUniform("viewPos", cam.getPos());
-	// set the location of the diffuse map texture
-	object_shader.setUniform("matDiffuse", 0);
-	object_shader.setUniform("matSpecular", 1);
-
-	// set light properties
-	object_shader.setUniform("light.position", lightPos);
-	object_shader.setUniform("light.ambient", lightColor * 0.1f);
-	object_shader.setUniform("light.diffuse", lightColor);
-	object_shader.setUniform("light.specular", lightColor * 0.75f);
+	Camera cam;
 
 	lightsource_shader.use();
 	lightsource_shader.setUniform("view", cam.getTransform());
 	lightsource_shader.setUniform("projection", perspective_projection);
 	lightsource_shader.setUniform("lightColor", lightColor);
-
-	debug_shader.use();
-	debug_shader.setUniform("view", cam.getTransform());
-	debug_shader.setUniform("projection", perspective_projection);
-
-	int num_cubes = 1000;
-	CubeMeshNormals::InstanceData* cubes = (CubeMeshNormals::InstanceData*)malloc(sizeof(CubeMeshNormals::InstanceData) * num_cubes);
-
-	struct CubeTransform
-	{
-		vec3 pos;
-		vec3 scale = vec3(1);
-		quat orientation = quat();
-		quat angular_velocity = quat();
-		// false: counterclockwise, true: clockwise
-		bool rotation_direction = false;
-		float orbit_velocity;
-	};
-
-	CubeTransform* transforms = (CubeTransform*)malloc(sizeof(CubeTransform) * num_cubes);
-
-	float radius = 75;
-	float position_variance = radius * 0.2;
-	float cube_scale = 1;
-	float scale_variance = cube_scale * 0.25;
-	float angular_velocity = 0;
-	float angular_velocity_variance = 0.5;
-	float clockwise_chance = 0;
-	float orbit_velocity = 0.01;
-	float orbit_velocity_variance = orbit_velocity * 0.75;
-	for (int i = 0; i < num_cubes; ++i)
-	{
-		transforms[i] = CubeTransform();
-
-		transforms[i].pos = {
-			(radius + dRandInRange(-position_variance, position_variance)) * cos(i * PI * 1.0 / num_cubes),
-			dRandInRange(-position_variance, position_variance),
-			(radius + dRandInRange(-position_variance, position_variance)) * sin(i * PI * 2.0 / num_cubes)
-		};
-
-		transforms[i].scale = vec3(cube_scale + dRandInRange(-scale_variance, scale_variance));
-
-		vec3 rotation_axis = vec3(
-			dRandInRange(0, 1),
-			dRandInRange(0, 1),
-			dRandInRange(0, 1)
-		).norm();
-
-		float ang_vel_mag = angular_velocity + dRandInRange(-angular_velocity_variance, angular_velocity_variance);
-
-		transforms[i].angular_velocity = quat(0, rotation_axis.x * ang_vel_mag, rotation_axis.y * ang_vel_mag, rotation_axis.z * ang_vel_mag);
-
-		if (dRandInRange(0, 1) <= clockwise_chance)
-			transforms[i].rotation_direction = true;
-
-		transforms[i].orbit_velocity = orbit_velocity + dRandInRange(-orbit_velocity_variance, orbit_velocity_variance);
-	}
-
-	for (int i = 0; i < num_cubes; ++i)
-	{
-		cubes[i] = CubeMeshNormals::InstanceData();
-
-		//cubes[i].model = trans(mat4(1), transforms[i].pos) * rotate(mat4(1), transforms[i].orientation) * scale(mat4(1), transforms[i].scale);
-		cubes[i].model = mat4(1);
-		tl3d::trans(tl3d::rotate(tl3d::scale(cubes[i].model, transforms[i].scale), transforms[i].orientation), transforms[i].pos);
-		//trans(cubes[i].model, transforms[i].pos) * rotate(mat4(1), transforms[i].orientation) * scale(mat4(1), transforms[i].scale);
-		cubes[i].shininess = 64;
-	}
 
 	bool use_debug_shader = false;
 
@@ -323,32 +161,6 @@ int main(int argc, char* argv[])
 	{
 		float delta = (float) (SDL_GetTicks() - last_tick);
 		last_tick = (float) SDL_GetTicks();
-
-		for (int i = 0; i < num_cubes; ++i)
-		{
-			// rotate about the origin
-			/*
-			if (!transforms[i].rotation_direction)
-			{
-				transforms[i].pos = rotate(trans(mat4(1), transforms[i].pos), transforms[i].orbit_velocity * delta / 1000, { 0, 1, 0 }).col(3);
-			}
-			else
-			{
-				transforms[i].pos = rotate(trans(mat4(1), transforms[i].pos), -transforms[i].orbit_velocity * delta / 1000, { 0, 1, 0 }).col(3);
-			}
-			*/
-
-			// update orientation by angular velocity
-			transforms[i].orientation += (delta / 1000) / 2 * transforms[i].angular_velocity * transforms[i].orientation;
-
-			// update the model matrix
-			cubes[i].model = mat4(1);
-			tl3d::trans(tl3d::rotate(tl3d::scale(cubes[i].model, transforms[i].scale), transforms[i].orientation), transforms[i].pos);
-		}
-
-		object_shader.use();
-		object_shader.setUniform("view", cam.getTransform());
-		object_shader.setUniform("viewPos", cam.getPos());
 
 		lightsource_shader.use();
 		lightsource_shader.setUniform("view", cam.getTransform());
@@ -419,13 +231,6 @@ int main(int argc, char* argv[])
 
 		auto draw_time_start = std::chrono::system_clock::now();
 
-		if (use_debug_shader)
-			debug_shader.use();
-		else
-			object_shader.use();
-
-		cMesh.draw(cubes, num_cubes);
-
 		// draw the light source
 		lightsource_shader.use();
 		cMesh.draw(&lightsource_cube, 1);
@@ -447,9 +252,6 @@ int main(int argc, char* argv[])
 		if (errors != "")
 			std::cout << errors << "\n";
 	}
-
-	free(cubes);
-	free(transforms);
 
 	SDL_DestroyWindow(window);
 
