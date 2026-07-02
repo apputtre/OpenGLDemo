@@ -1,0 +1,6 @@
+[submodule "ext/linalg"]
+	path = ext/linalg
+	url = https://github.com/apputtre/linalg.git
+[submodule "ext/tl3d"]
+	path = ext/tl3d
+	url = https://github.com/apputtre/tl3d.git
