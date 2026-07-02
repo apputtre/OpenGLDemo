@@ -275,7 +275,7 @@ int ShaderProgram::setUniform(string uniform_name, const linalg::mat<4, 4, float
 {
 	try{
 		unsigned int uniform_location = getUniform(uniform_name.c_str());
-		glUniformMatrix4fv(uniform_location, 1, GL_FALSE, (GLfloat*) &value);
+		glUniformMatrix4fv(uniform_location, 1, GL_TRUE, (GLfloat*) &value);
 	}
 	catch (std::invalid_argument e)
 	{
