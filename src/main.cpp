@@ -395,6 +395,9 @@ int main(int argc, char* argv[])
 
 		cam.update(delta);
 
+		lightsource_shader.use();
+		lightsource_shader.setUniform("view", cam.getTransform());
+
 		auto keyboard_state = SDL_GetKeyboardState(NULL);
 
 		if (keyboard_state[SDL_SCANCODE_W])
