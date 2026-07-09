@@ -90,18 +90,16 @@ void Camera::update(float delta)
 {
 	setPos(pos + translation_input * translation_speed * delta / 1000);
 
-	quat rotation = quat() + delta / 1000 / 2 * quat(0, rotation_input.x, rotation_input.y, rotation_input.z) * quat();
+	quat rotation = quat() + delta / 1000 / 2 * quat(0, rotation_input.x, rotation_input.y, rotation_input.z).norm();
 
-	//front = norm(rotate(mat3(1.0f), rotation) * front);
 	mat4 m(1);
-	vec4 temp = (tl3d::rotate(m, rotation) * vec4(front, 1)).norm();
+	vec4 temp = (tl3d::rotate(m, rotation) * vec4(front, 0)).norm();
 	front = {temp.x, temp.y, temp.z};
-	//up = norm(rotate(mat3(1.0f), rotation) * up);
+
 	m = mat4(1);
-	temp = (tl3d::rotate(m, rotation) * vec4(up, 1)).norm();
+	temp = (tl3d::rotate(m, rotation) * vec4(up, 0)).norm();
 	up = {temp.x, temp.y, temp.z};
 
-	//right = norm(cross(front, up));
 	right = front.cross(up).norm();
 
 	translation_input = 0;
