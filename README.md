@@ -1,3 +1,6 @@
+![Screenshot](/../promo/screenshot_2.png)
+![Screenshot](/../promo/screenshot_1.png)
+
 A demonstration of OpenGL using custom linear algebra and 3d transformation
 libraries.
 
