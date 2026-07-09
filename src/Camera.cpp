@@ -132,9 +132,12 @@ void Camera::updateTransform()
 			{0, 0, 0, 1}
 	};
 
-	tl3d::trans(transform, -pos); // undo the translation
+	mat4 temp(1.0f);
+	tl3d::trans(temp, -pos);
+	
+	transform = transform * temp;
 
-	// Multiplying this transform matrix by a the position of a point in world space gives that point's position in view space.
+	// Multiplying this transform matrix by the position of a point in world space gives that point's position in view space.
 
 	transform_dirty = false;
 }
