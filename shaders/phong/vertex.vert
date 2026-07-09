@@ -19,11 +19,13 @@ uniform mat4 view, projection;
 
 void main()
 {
-    gl_Position = projection * view * vModel * vec4(vPos, 1.0);
+	mat4 model = transpose(vModel);
+
+    gl_Position = projection * view * model * vec4(vPos, 1.0);
 
 	vs_out.normal = vNormal;
-	vs_out.fragPos = (vModel * vec4(vPos, 1.0)).xyz;
+	vs_out.fragPos = (model * vec4(vPos, 1.0)).xyz;
 	vs_out.texCoords = vTexCoords;
 	vs_out.shininess = vShininess;
-	vs_out.model = vModel;
+	vs_out.model = model;
 }
