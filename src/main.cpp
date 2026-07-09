@@ -279,7 +279,7 @@ int main(int argc, char* argv[])
 		transforms[i] = CubeTransform();
 
 		transforms[i].pos = {
-			(radius + dRandInRange(-position_variance, position_variance)) * cos(i * PI * 1.0 / num_cubes),
+			(radius + dRandInRange(-position_variance, position_variance)) * cos(i * PI * 2.0 / num_cubes),
 			dRandInRange(-position_variance, position_variance),
 			(radius + dRandInRange(-position_variance, position_variance)) * sin(i * PI * 2.0 / num_cubes)
 		};
@@ -306,10 +306,9 @@ int main(int argc, char* argv[])
 	{
 		cubes[i] = CubeMeshNormals::InstanceData();
 
-		//cubes[i].model = trans(mat4(1), transforms[i].pos) * rotate(mat4(1), transforms[i].orientation) * scale(mat4(1), transforms[i].scale);
 		cubes[i].model = mat4(1);
 		tl3d::trans(tl3d::rotate(tl3d::scale(cubes[i].model, transforms[i].scale), transforms[i].orientation), transforms[i].pos);
-		//trans(cubes[i].model, transforms[i].pos) * rotate(mat4(1), transforms[i].orientation) * scale(mat4(1), transforms[i].scale);
+
 		cubes[i].shininess = 64;
 	}
 
@@ -327,19 +326,17 @@ int main(int argc, char* argv[])
 		for (int i = 0; i < num_cubes; ++i)
 		{
 			// rotate about the origin
-			/*
-			if (!transforms[i].rotation_direction)
 			{
-				transforms[i].pos = rotate(trans(mat4(1), transforms[i].pos), transforms[i].orbit_velocity * delta / 1000, { 0, 1, 0 }).col(3);
+				mat4 m(1.0f);
+				mat4 rot = tl3d::rotate(m, transforms[i].orbit_velocity * delta / 1000, vec3 {0, 1, 0});
+				vec4 res = rot * vec4(transforms[i].pos, 1.0f);
+				
+				transforms[i].pos = vec3(res.x, res.y, res.z);
 			}
-			else
-			{
-				transforms[i].pos = rotate(trans(mat4(1), transforms[i].pos), -transforms[i].orbit_velocity * delta / 1000, { 0, 1, 0 }).col(3);
-			}
-			*/
 
 			// update orientation by angular velocity
 			transforms[i].orientation += (delta / 1000) / 2 * transforms[i].angular_velocity * transforms[i].orientation;
+			transforms[i].orientation = transforms[i].orientation.norm();
 
 			// update the model matrix
 			cubes[i].model = mat4(1);
