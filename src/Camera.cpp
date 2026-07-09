@@ -81,6 +81,8 @@ void Camera::handleInput(Camera::Input inputEvent, double magnitude)
 	case (Yaw):
 		rotation_input += magnitude * yaw_speed * getUp();
 		break;
+	default:
+		break;
 	}
 
 	translation_input = translation_input.norm();

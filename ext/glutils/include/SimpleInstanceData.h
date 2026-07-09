@@ -17,4 +17,4 @@ public:
 	static void setAttributes(unsigned int instance_buffer);
 };
 
-#endif DEFAULTMESHINSTANCEDATA_H
+#endif

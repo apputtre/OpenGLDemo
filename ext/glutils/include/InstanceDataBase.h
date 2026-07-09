@@ -7,4 +7,4 @@ public:
 	static void setAttributes(unsigned int instance_buffer) {}
 };
 
-#endif INSTANCEDATA_H
+#endif

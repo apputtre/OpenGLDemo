@@ -190,7 +190,7 @@ ShaderProgram::~ShaderProgram()
 
 void ShaderProgram::use()
 {
-	if (ID == NULL)
+	if (ID == 0)
 		throw std::runtime_error("Attempted to use shader before compiling it");
 
 	glUseProgram(ID);
@@ -207,7 +207,7 @@ int ShaderProgram::setUniform(string uniform_name, float value)
 		unsigned int uniform_location = getUniform(uniform_name);
 		glUniform1f(uniform_location, value);
 	}
-	catch (std::invalid_argument e) {
+	catch (std::invalid_argument& e) {
 		error = e.what();
 		throw e;
 	}
@@ -220,7 +220,7 @@ int ShaderProgram::setUniform(string uniform_name, int value)
 		unsigned int uniform_location = getUniform(uniform_name.c_str());
 		glUniform1i(uniform_location, value);
 	}
-	catch (std::invalid_argument e)
+	catch (std::invalid_argument& e)
 	{
 		error = e.what();
 		throw e;
@@ -234,7 +234,7 @@ int ShaderProgram::setUniform(string uniform_name, const linalg::vec<2, float>& 
 		unsigned int uniform_location = getUniform(uniform_name.c_str());
 		glUniform2fv(uniform_location, 1, (GLfloat*) &value);
 	}
-	catch (std::invalid_argument e)
+	catch (std::invalid_argument& e)
 	{
 		error = e.what();
 		throw e;
@@ -248,7 +248,7 @@ int ShaderProgram::setUniform(string uniform_name, const linalg::vec<3, float>& 
 		unsigned int uniform_location = getUniform(uniform_name.c_str());
 		glUniform3fv(uniform_location, 1, (GLfloat*) &value);
 	}
-	catch (std::invalid_argument e)
+	catch (std::invalid_argument& e)
 	{
 		error = e.what();
 		throw e;
@@ -262,7 +262,7 @@ int ShaderProgram::setUniform(string uniform_name, const linalg::vec<4, float>& 
 		unsigned int uniform_location = getUniform(uniform_name.c_str());
 		glUniform4fv(uniform_location, 1, (GLfloat*) &value);
 	}
-	catch (std::invalid_argument e)
+	catch (std::invalid_argument& e)
 	{
 		error = e.what();
 		throw e;
@@ -277,7 +277,7 @@ int ShaderProgram::setUniform(string uniform_name, const linalg::mat<4, 4, float
 		unsigned int uniform_location = getUniform(uniform_name.c_str());
 		glUniformMatrix4fv(uniform_location, 1, GL_TRUE, (GLfloat*) &value);
 	}
-	catch (std::invalid_argument e)
+	catch (std::invalid_argument& e)
 	{
 		error = e.what();
 		throw e;
@@ -288,9 +288,11 @@ int ShaderProgram::setUniform(string uniform_name, const linalg::mat<4, 4, float
 
 unsigned int ShaderProgram::getUniform(string uniform_name)
 {
-	unsigned int uniform_location = -1;
+	unsigned int uniform_location = UINT_MAX;
+
 	uniform_location = glGetUniformLocation(ID, uniform_name.c_str());
-	if (uniform_location == -1)
+
+	if (uniform_location == UINT_MAX)
 	{
 		error = "COULD NOT ACCESS UNIFORM " + uniform_name;
 		throw std::invalid_argument(error);

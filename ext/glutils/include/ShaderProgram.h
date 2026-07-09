@@ -20,10 +20,10 @@ class ShaderProgram
 private:
 	string error;
 
-	unsigned int ID = NULL;
-	unsigned int vshaderID = NULL;
-	unsigned int gshaderID = NULL;
-	unsigned int fshaderID = NULL;
+	unsigned int ID = 0;
+	unsigned int vshaderID = 0;
+	unsigned int gshaderID = 0;
+	unsigned int fshaderID = 0;
 public:
 	ShaderProgram(const char* vshader_path, const char* fshader_path);
 
