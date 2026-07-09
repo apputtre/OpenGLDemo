@@ -165,9 +165,6 @@ int main(int argc, char* argv[])
 		float delta = (float) (SDL_GetTicks() - last_tick);
 		last_tick = (float) SDL_GetTicks();
 
-		lightsource_shader.use();
-		lightsource_shader.setUniform("view", cam.getTransform());
-
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_WINDOWEVENT)
@@ -209,6 +206,9 @@ int main(int argc, char* argv[])
 		}
 
 		cam.update(delta);
+
+		lightsource_shader.use();
+		lightsource_shader.setUniform("view", cam.getTransform());
 
 		auto keyboard_state = SDL_GetKeyboardState(NULL);
 
