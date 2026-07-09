@@ -142,9 +142,12 @@ int main(int argc, char* argv[])
 	vec3 lightScale = vec3{ 10, 10, 10 };
 
 	lightsource_cube.model = mat4(1);
-	//tl3d::trans(tl3d::rotate(tl3d::scale(lightsource_cube.model, lightScale), (float) PI / 6.0f, vec3 {1, 1, 1}), lightPos);
+
+	tl3d::trans(tl3d::rotate(tl3d::scale(lightsource_cube.model, lightScale), (float) PI / 6.0f, vec3 {1, 1, 1}), lightPos);
 
 	Camera cam;
+
+	cam.setPos(vec3 {0, 0, 50});
 
 	lightsource_shader.use();
 	lightsource_shader.setUniform("view", cam.getTransform());
